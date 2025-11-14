@@ -5,21 +5,17 @@ WORKDIR /app
 COPY . .
 RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -mod=vendor -o app main.go
 
-
-# Stage 2 — Runtime dengan Headless Chromium
-FROM debian:bookworm-slim
-
-RUN apt-get update && apt-get install -y \
-    chromium \
-    chromium-driver \
-    --no-install-recommends \
- && apt-get clean \
- && rm -rf /var/lib/apt/lists/*
+# Stage 2 — Runtime pakai headless-shell sebagai dependency
+FROM chromedp/headless-shell:latest
 
 WORKDIR /app
 
+# copy binary Go lo
 COPY --from=builder /app/app .
 
-ENV CHROME_PATH=/usr/bin/chromium
+# path ke binary chromium headless di image ini
+ENV CHROME_PATH=/headless-shell/headless-shell
 
-CMD ["./app"]
+# JANGAN pakai CMD saja, karena ENTRYPOINT bawaan masih kepake
+# Kita override ENTRYPOINT-nya:
+ENTRYPOINT ["/app/app"]
