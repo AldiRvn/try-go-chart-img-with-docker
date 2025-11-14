@@ -2,6 +2,7 @@ package main
 
 import (
 	"math/rand"
+	"os"
 
 	"github.com/go-echarts/go-echarts/v2/charts"
 	"github.com/go-echarts/go-echarts/v2/opts"
@@ -56,10 +57,55 @@ func barTooltip() *charts.Bar {
 	return bar
 }
 
+func barReverse() *charts.Bar {
+	bar := charts.NewBar()
+	bar.SetGlobalOptions(
+		charts.WithAnimation(false), //! MANDATORY
+		charts.WithInitializationOpts(opts.Initialization{
+			BackgroundColor: "#FFFFFF",
+		}),
+		charts.WithTitleOpts(opts.Title{
+			Title: "reverse xaxis and yaxis",
+		}),
+	)
+
+	// PENTING: reversal dulu
+	bar.XYReversal()
+
+	// XAxis tetap weeks (string)
+	bar.SetXAxis(weeks).
+		AddSeries("Category A", generateBarItems()).
+		AddSeries("Category B", generateBarItems())
+
+	return bar
+}
+
+func barBasic() *charts.Bar {
+	bar := charts.NewBar()
+	bar.SetGlobalOptions(
+		charts.WithAnimation(false), //! MANDATORY
+		charts.WithInitializationOpts(opts.Initialization{
+			BackgroundColor: "#FFFFFF",
+		}),
+		charts.WithTitleOpts(opts.Title{Title: "basic bar example", Subtitle: "This is the subtitle."}),
+	)
+
+	bar.SetXAxis(weeks).
+		AddSeries("Category A", generateBarItems()).
+		AddSeries("Category B", generateBarItems())
+	return bar
+}
+
 func main() {
 	barTitleChart := barTitle()
 	barTooltipChart := barTooltip()
+	barReverse := barReverse()
 
-	render.MakeChartSnapshot(barTitleChart.RenderContent(), "my-bar-title.png")
-	render.MakeChartSnapshot(barTooltipChart.RenderContent(), "my-bar-tooltip.jpg")
+	dir := "gen/"
+	_ = os.MkdirAll(dir, os.ModePerm)
+
+	render.MakeChartSnapshot(barTitleChart.RenderContent(), "gen/my-bar-title.png")
+	render.MakeChartSnapshot(barTooltipChart.RenderContent(), "gen/my-bar-tooltip.jpg")
+	render.MakeChartSnapshot(barReverse.RenderContent(), "gen/horizontal-bar.png")
+	render.MakeChartSnapshot(barBasic().RenderContent(), "gen/basic-bar.png")
 }
